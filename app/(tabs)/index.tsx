@@ -1,10 +1,13 @@
-import { Text, View } from "react-native";
+import { Text } from "react-native";
 import { Link } from "expo-router";
-import id from "@/app/(tabs)/subscriptions/[id]";
+import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
+import { styled } from "nativewind";
+
+const SafeAreaView = styled(RNSafeAreaView);
 
 export default function App() {
   return (
-    <View className="bg-background flex-1 items-center justify-center">
+    <SafeAreaView className="bg-background flex-1 p-5">
       <Text className="text-success rounded-4xl bg-red-50 p-4 text-xl font-bold">
         Welcome to Native wind!
       </Text>
@@ -13,7 +16,7 @@ export default function App() {
         href="/onboarding"
         className="bg-primary mt-4 rounded p-4 text-white"
       >
-        Go to Onbaording{" "}
+        Go to Onboarding
       </Link>
       <Link
         href="/(auth)/sign-in"
@@ -33,6 +36,6 @@ export default function App() {
       >
         Claude pro subscription
       </Link>
-    </View>
+    </SafeAreaView>
   );
 }
