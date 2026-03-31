@@ -1,5 +1,6 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import { formatCurrency } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 const UpcomingSubscriptionCard = ({
   name,
@@ -8,6 +9,13 @@ const UpcomingSubscriptionCard = ({
   currency,
   icon,
 }: UpcomingSubscription) => {
+  const upcoming =
+    daysLeft > 1
+      ? `${daysLeft} days Left`
+      : daysLeft === 1
+        ? "Last day"
+        : "Expired";
+
   return (
     <View className="upcoming-card">
       <View className="upcoming-row">
@@ -17,9 +25,7 @@ const UpcomingSubscriptionCard = ({
           <Text className="upcoming-price">
             {formatCurrency(price, currency)}
           </Text>
-          <Text className="upcoming-meta">
-            {daysLeft > 1 ? "days left" : "last day"}
-          </Text>
+          <Text className="upcoming-meta">{upcoming}</Text>
         </View>
       </View>
 

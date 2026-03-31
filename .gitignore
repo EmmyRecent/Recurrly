@@ -5,6 +5,7 @@ node_modules/
 
 .vscode/
 .idea/
+.idea/workspace.xml
 
 # Expo
 .expo/
