@@ -25,7 +25,11 @@ export default function App() {
     string | null
   >(null);
 
-  const displayName = user?.username ?? "";
+  const displayName =
+    user?.username ||
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+    user?.primaryEmailAddress?.emailAddress?.split("@")[0] ||
+    "user";
 
   return (
     <SafeAreaView className="bg-background flex-1 p-5">

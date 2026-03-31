@@ -27,6 +27,7 @@ export default function SignUp() {
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [username, setUsername] = useState("");
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -39,7 +40,13 @@ export default function SignUp() {
   const handleSignUp = async () => {
     setLocalError("");
 
-    if (!firstName.trim() || !lastName.trim() || !emailAddress.trim() || !password) {
+    if (
+      !firstName.trim() ||
+      !lastName.trim() ||
+      !username.trim() ||
+      !emailAddress.trim() ||
+      !password
+    ) {
       setLocalError("Please fill in all fields.");
       return;
     }
@@ -57,12 +64,25 @@ export default function SignUp() {
       password,
       firstName: firstName.trim(),
       lastName: lastName.trim(),
+      username: username.trim(),
     } as any);
 
     if (error) return;
 
-    await signUp.verifications.sendEmailCode();
-    setVerifying(true);
+    try {
+      const { error: sendCodeError } =
+        await signUp.verifications.sendEmailCode();
+      if (sendCodeError) {
+        setLocalError(sendCodeError.longMessage || sendCodeError.message);
+        return;
+      }
+      setVerifying(true);
+    } catch (err) {
+      setLocalError(
+        "Failed to send verification code. Please try again later.",
+      );
+      return;
+    }
   };
 
   const handleVerify = async () => {
@@ -101,8 +121,8 @@ export default function SignUp() {
 
   const globalError =
     localError ||
-    (errors as any)?.globalErrors?.[0]?.message ||
-    (errors as any)?.message ||
+    errors.global?.[0]?.longMessage ||
+    errors.global?.[0]?.message ||
     "";
 
   // ── Email verification view ──────────────────────────────────────────────
@@ -176,9 +196,17 @@ export default function SignUp() {
 
                   <Pressable
                     className="auth-secondary-button"
-                    onPress={() => {
+                    onPress={async () => {
                       setCode("");
-                      signUp.verifications.sendEmailCode();
+
+                      const { error: resendError } =
+                        await signUp.verifications.sendEmailCode();
+
+                      if (resendError) {
+                        setLocalError(
+                          resendError.longMessage || resendError.message,
+                        );
+                      }
                     }}
                     disabled={isLoading}
                   >
@@ -245,39 +273,55 @@ export default function SignUp() {
             <View className="auth-card">
               <View className="auth-form">
                 {/* Name row */}
-                <View className="flex-row gap-3">
-                  <View className="auth-field flex-1">
-                    <Text className="auth-label">First name</Text>
-                    <TextInput
-                      className={clsx(
-                        "auth-input",
-                        (errors as any)?.fields?.firstName && "auth-input-error",
-                      )}
-                      value={firstName}
-                      onChangeText={setFirstName}
-                      placeholder="First"
-                      placeholderTextColor="rgba(0,0,0,0.3)"
-                      autoCapitalize="words"
-                      autoComplete="given-name"
-                      textContentType="givenName"
-                    />
-                  </View>
-                  <View className="auth-field flex-1">
-                    <Text className="auth-label">Last name</Text>
-                    <TextInput
-                      className={clsx(
-                        "auth-input",
-                        (errors as any)?.fields?.lastName && "auth-input-error",
-                      )}
-                      value={lastName}
-                      onChangeText={setLastName}
-                      placeholder="Last"
-                      placeholderTextColor="rgba(0,0,0,0.3)"
-                      autoCapitalize="words"
-                      autoComplete="family-name"
-                      textContentType="familyName"
-                    />
-                  </View>
+                <View className="auth-field flex-1">
+                  <Text className="auth-label">First name</Text>
+                  <TextInput
+                    className={clsx(
+                      "auth-input",
+                      (errors as any)?.fields?.firstName && "auth-input-error",
+                    )}
+                    value={firstName}
+                    onChangeText={setFirstName}
+                    placeholder="Enter your first name"
+                    placeholderTextColor="rgba(0,0,0,0.3)"
+                    autoCapitalize="words"
+                    autoComplete="given-name"
+                    textContentType="givenName"
+                  />
+                </View>
+
+                <View className="auth-field flex-1">
+                  <Text className="auth-label">Last name</Text>
+                  <TextInput
+                    className={clsx(
+                      "auth-input",
+                      (errors as any)?.fields?.lastName && "auth-input-error",
+                    )}
+                    value={lastName}
+                    onChangeText={setLastName}
+                    placeholder="Enter your last name"
+                    placeholderTextColor="rgba(0,0,0,0.3)"
+                    autoCapitalize="words"
+                    autoComplete="family-name"
+                    textContentType="familyName"
+                  />
+                </View>
+
+                <View className="auth-field flex-1">
+                  <Text className="auth-label">Username</Text>
+                  <TextInput
+                    className={clsx(
+                      "auth-input",
+                      (errors as any)?.fields?.username && "auth-input-error",
+                    )}
+                    value={username}
+                    onChangeText={setUsername}
+                    placeholder="Enter your username"
+                    placeholderTextColor="rgba(0,0,0,0.3)"
+                    autoCapitalize="none"
+                    autoComplete="username"
+                    textContentType="username"
+                  />
                 </View>
 
                 {/* Email */}
@@ -356,11 +400,21 @@ export default function SignUp() {
                 <Pressable
                   className={clsx(
                     "auth-button",
-                    (isLoading || !firstName || !lastName || !emailAddress || !password) &&
+                    (isLoading ||
+                      !firstName ||
+                      !lastName ||
+                      !emailAddress ||
+                      !password) &&
                       "auth-button-disabled",
                   )}
                   onPress={handleSignUp}
-                  disabled={isLoading || !firstName || !lastName || !emailAddress || !password}
+                  disabled={
+                    isLoading ||
+                    !firstName ||
+                    !lastName ||
+                    !emailAddress ||
+                    !password
+                  }
                 >
                   <Text className="auth-button-text">
                     {isLoading ? "Creating account…" : "Create account"}

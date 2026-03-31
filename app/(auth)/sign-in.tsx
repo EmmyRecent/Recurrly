@@ -63,9 +63,20 @@ export default function SignIn() {
       return;
     }
 
-    if (signIn.status === "needs_client_trust") {
-      await signIn.mfa.sendEmailCode();
-      setVerifying(true);
+    if (signIn.status === "needs_second_factor") {
+      try {
+        const { error: sendCodeError } = await signIn.mfa.sendEmailCode();
+        if (sendCodeError) {
+          setLocalError(sendCodeError.longMessage || sendCodeError.message);
+          return;
+        }
+        setVerifying(true);
+      } catch (err) {
+        setLocalError(
+          "Failed to send verification code. Please try again later.",
+        );
+        return;
+      }
     }
   };
 
@@ -103,12 +114,12 @@ export default function SignIn() {
 
   const globalError =
     localError ||
-    (errors as any)?.globalErrors?.[0]?.message ||
-    (errors as any)?.message ||
+    errors.global?.[0]?.longMessage ||
+    errors.global?.[0]?.message ||
     "";
 
-  // ── Email verification view ────────────────────────────────────────────────
-  if (verifying) {
+  //  Email verification view
+  if (verifying && signIn.status === "needs_second_factor") {
     return (
       <StyledSafeAreaView className="auth-safe-area">
         <StatusBar style="dark" />
@@ -178,7 +189,18 @@ export default function SignIn() {
 
                   <Pressable
                     className="auth-secondary-button"
-                    onPress={() => signIn.mfa.sendEmailCode()}
+                    onPress={async () => {
+                      setCode("");
+
+                      const { error: resendError } =
+                        await signIn.mfa.sendEmailCode();
+
+                      if (resendError) {
+                        setLocalError(
+                          resendError.longMessage || resendError.message,
+                        );
+                      }
+                    }}
                     disabled={isLoading}
                   >
                     <Text className="auth-secondary-button-text">
