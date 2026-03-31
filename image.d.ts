@@ -1,22 +1,20 @@
-import { ImageSourcePropType } from "react-native";
-
 declare module "*.png" {
-  const value: ImageSourcePropType;
+  const value: any;
   export default value;
 }
 declare module "*.jpg" {
-  const value: ImageSourcePropType;
+  const value: any;
   export default value;
 }
 declare module "*.jpeg" {
-  const value: ImageSourcePropType;
+  const value: any;
   export default value;
 }
 declare module "*.svg" {
-  const value: React.FC<React.SVGProps<SVGSVGElement>>;
+  const value: any;
   export default value;
 }
 declare module "*.gif" {
-  const value: ImageSourcePropType;
+  const value: any;
   export default value;
 }
