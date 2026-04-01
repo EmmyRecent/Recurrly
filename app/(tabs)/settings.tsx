@@ -37,7 +37,6 @@ export default function Settings() {
 
     try {
       await signOut();
-      router.replace("/(auth)/sign-in");
     } catch (error) {
       console.error("Sign out failed", error);
     } finally {
@@ -81,7 +80,7 @@ export default function Settings() {
 
       {/* Account card */}
       <View className="border-border bg-card mb-8 rounded-3xl border p-5">
-        <Text className="font-sans-bold text-primary mb-4 text-base">
+        <Text className="font-sans-bold text-primary mb-4 text-lg">
           Account
         </Text>
         <View className="mb-4 flex-row items-center justify-between">

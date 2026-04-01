@@ -288,6 +288,11 @@ export default function SignUp() {
                     autoComplete="given-name"
                     textContentType="givenName"
                   />
+                  {(errors as any)?.fields?.firstName && (
+                    <Text className="auth-error">
+                      {(errors as any).fields.firstName.message}
+                    </Text>
+                  )}
                 </View>
 
                 <View className="auth-field flex-1">
@@ -305,6 +310,11 @@ export default function SignUp() {
                     autoComplete="family-name"
                     textContentType="familyName"
                   />
+                  {(errors as any)?.fields?.lastName && (
+                    <Text className="auth-error">
+                      {(errors as any).fields.lastName.message}
+                    </Text>
+                  )}
                 </View>
 
                 <View className="auth-field flex-1">
@@ -322,6 +332,11 @@ export default function SignUp() {
                     autoComplete="username"
                     textContentType="username"
                   />
+                  {(errors as any)?.fields?.username && (
+                    <Text className="auth-error">
+                      {(errors as any).fields.username.message}
+                    </Text>
+                  )}
                 </View>
 
                 {/* Email */}
@@ -403,6 +418,7 @@ export default function SignUp() {
                     (isLoading ||
                       !firstName ||
                       !lastName ||
+                      !username ||
                       !emailAddress ||
                       !password) &&
                       "auth-button-disabled",
@@ -412,6 +428,7 @@ export default function SignUp() {
                     isLoading ||
                     !firstName ||
                     !lastName ||
+                    !username ||
                     !emailAddress ||
                     !password
                   }

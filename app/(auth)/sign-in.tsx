@@ -119,7 +119,11 @@ export default function SignIn() {
     "";
 
   //  Email verification view
-  if (verifying && signIn.status === "needs_second_factor") {
+  if (
+    verifying &&
+    (signIn.status === "needs_second_factor" ||
+      signIn.status === "needs_client_trust")
+  ) {
     return (
       <StyledSafeAreaView className="auth-safe-area">
         <StatusBar style="dark" />
