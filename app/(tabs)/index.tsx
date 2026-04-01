@@ -1,11 +1,10 @@
-import { Text, View, Image, FlatList } from "react-native";
+import { Text, View, Image, FlatList, Pressable } from "react-native";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 import { styled } from "nativewind";
 import { usePostHog } from "posthog-react-native";
 import images from "@/constants/images";
 import {
   HOME_BALANCE,
-  HOME_SUBSCRIPTIONS,
   UPCOMING_SUBSCRIPTIONS,
 } from "@/constants/data";
 import { useUser } from "@clerk/expo";
@@ -15,6 +14,8 @@ import dayjs from "dayjs";
 import ListHeading from "@/components/ListHeading";
 import UpcomingSubscriptionCard from "@/components/UpcomingSubscriptionCard";
 import SubscriptionCard from "@/components/SubscriptionCard";
+import CreateSubscriptionModal from "@/components/CreateSubscriptionModal";
+import { useSubscriptions } from "@/context/subscriptions";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 
@@ -26,6 +27,8 @@ export default function App() {
   const [expandedSubscriptionId, setExpandedSubscriptionId] = useState<
     string | null
   >(null);
+  const { subscriptions, addSubscription } = useSubscriptions();
+  const [modalVisible, setModalVisible] = useState(false);
 
   const displayName =
     user?.username ||
@@ -51,7 +54,9 @@ export default function App() {
                 <Text className="home-user-name capitalize">{displayName}</Text>
               </View>
 
-              <Image source={icons.add} className="home-add-icon" />
+              <Pressable onPress={() => setModalVisible(true)}>
+                <Image source={icons.add} className="home-add-icon" />
+              </Pressable>
             </View>
 
             <View className="home-balance-card">
@@ -92,7 +97,7 @@ export default function App() {
             />
           </>
         )}
-        data={HOME_SUBSCRIPTIONS}
+        data={subscriptions}
         renderItem={({ item }) => (
           <SubscriptionCard
             {...item}
@@ -120,6 +125,12 @@ export default function App() {
           <Text className="home-empty-state">No Subscriptions yet.</Text>
         }
         contentContainerClassName="pb-20" // Adds a space to the bottom of the Flat list
+      />
+
+      <CreateSubscriptionModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSubmit={addSubscription}
       />
     </SafeAreaView>
   );

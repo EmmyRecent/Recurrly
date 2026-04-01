@@ -9,21 +9,22 @@ import {
 import React, { useState } from "react";
 import { SafeAreaView } from "./index";
 import SubscriptionCard from "@/components/SubscriptionCard";
-import { HOME_SUBSCRIPTIONS } from "@/constants/data";
+import { useSubscriptions } from "@/context/subscriptions";
 
 const Subscriptions = () => {
+  const { subscriptions } = useSubscriptions();
   const [expandedSubscriptionId, setExpandedSubscriptionId] = useState<
     string | null
   >(null);
   const [searchQuery, setSearchQuery] = useState("");
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const filteredSubscriptions = normalizedQuery
-    ? HOME_SUBSCRIPTIONS.filter(
+    ? subscriptions.filter(
         (sub) =>
           sub.name.toLowerCase().includes(normalizedQuery) ||
           sub.category?.toLowerCase().includes(normalizedQuery),
       )
-    : HOME_SUBSCRIPTIONS;
+    : subscriptions;
 
   return (
     <SafeAreaView className="bg-background flex-1 p-5">
