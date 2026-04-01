@@ -68,7 +68,7 @@ export default function App() {
             </View>
 
             <View className="mb-5">
-              <ListHeading title="Upcoming" />
+              <ListHeading title="Upcoming" href="/(tabs)/subscriptions" />
 
               <FlatList
                 data={UPCOMING_SUBSCRIPTIONS}
@@ -86,7 +86,10 @@ export default function App() {
               />
             </View>
 
-            <ListHeading title="All Subscriptions" />
+            <ListHeading
+              title="All Subscriptions"
+              href="/(tabs)/subscriptions"
+            />
           </>
         )}
         data={HOME_SUBSCRIPTIONS}
@@ -96,11 +99,12 @@ export default function App() {
             expanded={expandedSubscriptionId === item.id}
             onPress={() => {
               const isExpanding = expandedSubscriptionId !== item.id;
+
               if (isExpanding) {
                 posthog.capture("subscription_expanded", {
                   subscription_id: item.id,
                   subscription_name: item.name,
-                  category: item.category,
+                  ...(item.category && { category: item.category }),
                 });
               }
               setExpandedSubscriptionId((currentID) =>

@@ -16,12 +16,12 @@ const Subscriptions = () => {
     string | null
   >(null);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const filteredSubscriptions = searchQuery.trim()
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredSubscriptions = normalizedQuery
     ? HOME_SUBSCRIPTIONS.filter(
         (sub) =>
-          sub.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          sub.category?.toLowerCase().includes(searchQuery.toLowerCase()),
+          sub.name.toLowerCase().includes(normalizedQuery) ||
+          sub.category?.toLowerCase().includes(normalizedQuery),
       )
     : HOME_SUBSCRIPTIONS;
 
