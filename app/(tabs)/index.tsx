@@ -1,6 +1,7 @@
 import { Text, View, Image, FlatList } from "react-native";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 import { styled } from "nativewind";
+import { usePostHog } from "posthog-react-native";
 import images from "@/constants/images";
 import {
   HOME_BALANCE,
@@ -21,6 +22,7 @@ export const SafeAreaView = styled(RNSafeAreaView);
 
 export default function App() {
   const { user } = useUser();
+  const posthog = usePostHog();
   const [expandedSubscriptionId, setExpandedSubscriptionId] = useState<
     string | null
   >(null);
@@ -92,11 +94,19 @@ export default function App() {
           <SubscriptionCard
             {...item}
             expanded={expandedSubscriptionId === item.id}
-            onPress={() =>
+            onPress={() => {
+              const isExpanding = expandedSubscriptionId !== item.id;
+              if (isExpanding) {
+                posthog.capture("subscription_expanded", {
+                  subscription_id: item.id,
+                  subscription_name: item.name,
+                  category: item.category,
+                });
+              }
               setExpandedSubscriptionId((currentID) =>
                 currentID === item.id ? null : item.id,
-              )
-            }
+              );
+            }}
           />
         )}
         extraData={expandedSubscriptionId}
