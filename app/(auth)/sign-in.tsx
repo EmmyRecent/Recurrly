@@ -1,6 +1,7 @@
 import { useSignIn } from "@clerk/expo";
 import { type Href, useRouter } from "expo-router";
 import { useState } from "react";
+import { usePostHog } from "posthog-react-native";
 import clsx from "clsx";
 import {
   KeyboardAvoidingView,
@@ -25,6 +26,7 @@ const EMAIL_RE = /\S+@\S+\.\S+/;
 export default function SignIn() {
   const { signIn, errors, fetchStatus } = useSignIn();
   const router = useRouter();
+  const posthog = usePostHog();
 
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
@@ -47,6 +49,8 @@ export default function SignIn() {
       return;
     }
 
+    posthog.capture("sign_in_submitted");
+
     const { error } = await signIn.password({
       emailAddress: emailAddress.trim(),
       password,
@@ -55,6 +59,11 @@ export default function SignIn() {
     if (error) return;
 
     if (signIn.status === "complete") {
+      const userId = signIn.createdSessionId ?? emailAddress.trim();
+      posthog.identify(userId, {
+        $set: { email: emailAddress.trim() },
+      });
+      posthog.capture("sign_in_completed", { method: "password" });
       await signIn.finalize({
         navigate: ({ decorateUrl }) => {
           router.replace(decorateUrl("/") as Href);
@@ -70,8 +79,20 @@ export default function SignIn() {
           setLocalError(sendCodeError.longMessage || sendCodeError.message);
           return;
         }
+        posthog.capture("mfa_code_requested", { method: "email" });
         setVerifying(true);
       } catch (err) {
+        const caught = err as Error;
+        posthog.capture("$exception", {
+          $exception_list: [
+            {
+              type: caught.name,
+              value: caught.message,
+              stacktrace: { type: "raw", frames: caught.stack ?? "" },
+            },
+          ],
+          screen: "SignIn",
+        });
         setLocalError(
           "Failed to send verification code. Please try again later.",
         );
@@ -102,6 +123,11 @@ export default function SignIn() {
 
     // signIn is a mutable Clerk object — .status is updated in-place after the await
     if (signIn.status === "complete") {
+      const userId = signIn.createdSessionId ?? emailAddress.trim();
+      posthog.identify(userId, {
+        $set: { email: emailAddress.trim() },
+      });
+      posthog.capture("sign_in_completed", { method: "mfa_email" });
       await signIn.finalize({
         navigate: ({ decorateUrl }) => {
           router.replace(decorateUrl("/") as Href);

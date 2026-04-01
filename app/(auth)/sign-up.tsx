@@ -1,6 +1,7 @@
 import { useSignUp } from "@clerk/expo";
 import { type Href, Link, useRouter } from "expo-router";
 import { useState } from "react";
+import { usePostHog } from "posthog-react-native";
 import clsx from "clsx";
 import {
   KeyboardAvoidingView,
@@ -24,6 +25,7 @@ const EMAIL_RE = /\S+@\S+\.\S+/;
 export default function SignUp() {
   const { signUp, errors, fetchStatus } = useSignUp();
   const router = useRouter();
+  const posthog = usePostHog();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -59,6 +61,10 @@ export default function SignUp() {
       return;
     }
 
+    posthog.capture("sign_up_submitted", {
+      has_username: !!username.trim(),
+    });
+
     const { error } = await signUp.password({
       emailAddress: emailAddress.trim(),
       password,
@@ -78,6 +84,17 @@ export default function SignUp() {
       }
       setVerifying(true);
     } catch (err) {
+      const caught = err as Error;
+      posthog.capture("$exception", {
+        $exception_list: [
+          {
+            type: caught.name,
+            value: caught.message,
+            stacktrace: { type: "raw", frames: caught.stack ?? "" },
+          },
+        ],
+        screen: "SignUp",
+      });
       setLocalError(
         "Failed to send verification code. Please try again later.",
       );
@@ -107,6 +124,19 @@ export default function SignUp() {
 
     // signUp is a mutable Clerk object — .status is updated in-place after the await
     if (signUp.status === "complete") {
+      const userId = signUp.createdUserId ?? emailAddress.trim();
+      posthog.identify(userId, {
+        $set: {
+          email: emailAddress.trim(),
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          username: username.trim(),
+        },
+        $set_once: { signup_date: new Date().toISOString() },
+      });
+      posthog.capture("sign_up_completed", {
+        username: username.trim(),
+      });
       await signUp.finalize({
         navigate: ({ decorateUrl }) => {
           router.replace(decorateUrl("/") as Href);

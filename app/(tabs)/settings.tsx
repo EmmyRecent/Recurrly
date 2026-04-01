@@ -1,6 +1,7 @@
 import { View, Text, Pressable, Image } from "react-native";
 import { useUser, useAuth } from "@clerk/expo";
 import { useRouter } from "expo-router";
+import { usePostHog } from "posthog-react-native";
 import { StatusBar } from "expo-status-bar";
 import images from "@/constants/images";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
@@ -13,6 +14,7 @@ export default function Settings() {
   const { user } = useUser();
   const { signOut } = useAuth();
   const router = useRouter();
+  const posthog = usePostHog();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ");
   const username = user?.username ?? "";
@@ -36,6 +38,8 @@ export default function Settings() {
     setIsSigningOut(true);
 
     try {
+      posthog.capture("sign_out");
+      posthog.reset();
       await signOut();
     } catch (error) {
       console.error("Sign out failed", error);
