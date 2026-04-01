@@ -1,4 +1,5 @@
 import type { ImageSourcePropType } from "react-native";
+import { LinkProps } from "expo-router";
 
 declare global {
   type TabRouteName = "index" | "subscriptions" | "insights" | "settings";
@@ -53,6 +54,7 @@ declare global {
 
   interface ListHeadingProps {
     title: string;
+    href: LinkProps["href"];
   }
 }
 
