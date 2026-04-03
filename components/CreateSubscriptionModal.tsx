@@ -60,7 +60,6 @@ function getSlug(name: string) {
 
 function getIconSource(name: string): ImageSourcePropType {
   const token = process.env.EXPO_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY!;
-  console.log("LOGO_DEV token:", token);
   const lower = name.toLowerCase();
   for (const [keyword, icon] of LOCAL_MAP) {
     if (lower.includes(keyword)) return icon;
@@ -89,8 +88,6 @@ export default function CreateSubscriptionModal({
   const [frequency, setFrequency] = useState<"Monthly" | "Yearly">("Monthly");
   const [category, setCategory] = useState("Entertainment");
   const [iconError, setIconError] = useState(false);
-
-  console.log("Logo:", getIconSource("Netflix"));
 
   // Only reset error when the first-word slug changes, not on every keystroke
   const slug = getSlug(name);
@@ -256,7 +253,7 @@ export default function CreateSubscriptionModal({
 
               <Pressable
                 className={clsx(
-                  "auth-button",
+                  "auth-button mb-8",
                   !isValid && "auth-button-disabled",
                 )}
                 onPress={handleSubmit}
