@@ -14,6 +14,7 @@ import clsx from "clsx";
 import dayjs from "dayjs";
 import { icons } from "@/constants/icons";
 import type { ImageSourcePropType } from "react-native";
+import { posthog } from "@/lib/posthog";
 
 const CATEGORIES = [
   "Entertainment",
@@ -119,12 +120,23 @@ export default function CreateSubscriptionModal({
       color: CATEGORY_COLORS[category],
       currency: "GBP",
     };
+
     onSubmit(sub);
+
+    // Create a new subscription event
+    posthog.capture("subscription_created", {
+      subscription_name: name.trim(),
+      subscription_price: parseFloat(price),
+      subscription_frequency: frequency,
+      subscription_category: category,
+    });
+
     setName("");
     setPrice("");
     setFrequency("Monthly");
     setCategory("Entertainment");
     setIconError(false);
+
     onClose();
   };
 
